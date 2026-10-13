@@ -5,6 +5,7 @@ import com.example.library.exception.LibraryException;
 import com.example.library.service.BookService;
 import com.example.library.entity.LibraryStats;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -38,6 +39,8 @@ public class Main {
 
             } catch (LibraryException e) {
                 System.out.println("操作失败: " + e.getMessage());
+            } catch (SQLException e) {
+                System.out.println("数据库异常: " + e.getMessage());
             } catch (Exception e) {
                 System.out.println("系统异常: " + e.getMessage());
             }
@@ -60,7 +63,7 @@ public class Main {
         System.out.print("请选择: ");
     }
 
-    private static void addBook() {
+    private static void addBook() throws SQLException {
         System.out.print("ISBN: ");
         String isbn = scanner.nextLine().trim();
 
@@ -74,7 +77,7 @@ public class Main {
         System.out.println("添加成功。");
     }
 
-    private static void deleteBook() {
+    private static void deleteBook() throws SQLException {
         System.out.print("ISBN: ");
         String isbn = scanner.nextLine().trim();
 
@@ -82,7 +85,7 @@ public class Main {
         System.out.println("删除成功。");
     }
 
-    private static void updateBook() {
+    private static void updateBook() throws SQLException {
         System.out.print("ISBN: ");
         String isbn = scanner.nextLine().trim();
 
@@ -96,18 +99,18 @@ public class Main {
         System.out.println("修改成功。");
     }
 
-    private static void listBooks() {
+    private static void listBooks() throws SQLException {
         printBooks(bookService.findAll(), "暂无图书。");
     }
 
-    private static void findBook() {
+    private static void findBook() throws SQLException {
         System.out.print("ISBN: ");
         String isbn = scanner.nextLine().trim();
 
         System.out.println(bookService.findByIsbn(isbn));
     }
 
-    private static void borrowBook() {
+    private static void borrowBook() throws SQLException {
         System.out.print("ISBN: ");
         String isbn = scanner.nextLine().trim();
 
@@ -115,7 +118,7 @@ public class Main {
         System.out.println("借书成功。");
     }
 
-    private static void returnBook() {
+    private static void returnBook() throws SQLException {
         System.out.print("ISBN: ");
         String isbn = scanner.nextLine().trim();
 
@@ -123,7 +126,7 @@ public class Main {
         System.out.println("还书成功。");
     }
 
-    private static void searchBooks() {
+    private static void searchBooks() throws SQLException {
         System.out.print("关键词（书名或作者）: ");
         String keyword = scanner.nextLine().trim();
 
@@ -131,7 +134,7 @@ public class Main {
         printBooks(result, "没有匹配的图书。");
     }
 
-    private static void findBooksByAuthor() {
+    private static void findBooksByAuthor() throws SQLException {
         System.out.print("作者名: ");
         String author = scanner.nextLine().trim();
 
@@ -139,7 +142,7 @@ public class Main {
         printBooks(result, "没有该作者的图书。");
     }
 
-    private static void showStats() {
+    private static void showStats() throws SQLException {
         LibraryStats stats = bookService.getStats();
         System.out.println(stats);
     }

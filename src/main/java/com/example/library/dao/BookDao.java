@@ -1,6 +1,7 @@
 package com.example.library.dao;
 
 import com.example.library.entity.Book;
+import com.example.library.entity.LibraryStats;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -82,5 +83,64 @@ public class BookDao {
         );
         book.setBorrowed(rs.getInt("borrowed") == 1);
         return book;
+    }
+
+    public void updateBookInfo(Book book) throws SQLException {
+        String sql = "UPDATE books SET title = ?, author = ? WHERE isbn = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, book.getTitle());
+            ps.setString(2, book.getAuthor());
+            ps.setString(3, book.getIsbn());
+            ps.executeUpdate();
+        }
+    }
+
+    public List<Book> searchByKeyword(String keyword) throws SQLException {
+        String sql = "SELECT * FROM books WHERE title LIKE ? OR author LIKE ?";
+        List<Book> result = new ArrayList<>();
+        String pattern = "%" + keyword + "%";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, pattern);
+            ps.setString(2, pattern);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    result.add(mapRow(rs));
+                }
+            }
+        }
+        return result;
+    }
+
+    public List<Book> findByAuthor(String author) throws SQLException {
+        String sql = "SELECT * FROM books WHERE author LIKE ?";
+        List<Book> result = new ArrayList<>();
+        String pattern = "%" + author + "%";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, pattern);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    result.add(mapRow(rs));
+                }
+            }
+        }
+        return result;
+    }
+
+    public LibraryStats getStats() throws SQLException {
+        String sql = "SELECT COUNT(*) AS total, "
+                + "COALESCE(SUM(borrowed), 0) AS borrowed FROM books";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                int total = rs.getInt("total");
+                int borrowed = rs.getInt("borrowed");
+                return new LibraryStats(total, borrowed, total - borrowed);
+            }
+        }
+        return new LibraryStats(0, 0, 0);
     }
 }
