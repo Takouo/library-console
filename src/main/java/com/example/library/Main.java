@@ -3,6 +3,7 @@ package com.example.library;
 import com.example.library.entity.Book;
 import com.example.library.exception.LibraryException;
 import com.example.library.service.BookService;
+import com.example.library.entity.LibraryStats;
 
 import java.util.List;
 import java.util.Scanner;
@@ -25,12 +26,16 @@ public class Main {
                     case "5" -> findBook();
                     case "6" -> borrowBook();
                     case "7" -> returnBook();
+                    case "8" -> searchBooks();
+                    case "9" -> findBooksByAuthor();
+                    case "10" -> showStats();
                     case "0" -> {
                         System.out.println("再见！");
                         return;
                     }
                     default -> System.out.println("无效选项，请重新输入。");
                 }
+
             } catch (LibraryException e) {
                 System.out.println("操作失败: " + e.getMessage());
             } catch (Exception e) {
@@ -48,6 +53,9 @@ public class Main {
         System.out.println("5. 按 ISBN 查询");
         System.out.println("6. 借书");
         System.out.println("7. 还书");
+        System.out.println("8. 模糊搜索（书名/作者）");
+        System.out.println("9. 按作者查询");
+        System.out.println("10. 统计信息");
         System.out.println("0. 退出");
         System.out.print("请选择: ");
     }
@@ -89,14 +97,7 @@ public class Main {
     }
 
     private static void listBooks() {
-        List<Book> books = bookService.findAll();
-
-        if (books.isEmpty()) {
-            System.out.println("暂无图书。");
-            return;
-        }
-
-        books.forEach(System.out::println);
+        printBooks(bookService.findAll(), "暂无图书。");
     }
 
     private static void findBook() {
@@ -121,4 +122,34 @@ public class Main {
         bookService.returnBook(isbn);
         System.out.println("还书成功。");
     }
+
+    private static void searchBooks() {
+        System.out.print("关键词（书名或作者）: ");
+        String keyword = scanner.nextLine().trim();
+
+        List<Book> result = bookService.searchByKeyword(keyword);
+        printBooks(result, "没有匹配的图书。");
+    }
+
+    private static void findBooksByAuthor() {
+        System.out.print("作者名: ");
+        String author = scanner.nextLine().trim();
+
+        List<Book> result = bookService.findByAuthor(author);
+        printBooks(result, "没有该作者的图书。");
+    }
+
+    private static void showStats() {
+        LibraryStats stats = bookService.getStats();
+        System.out.println(stats);
+    }
+
+    private static void printBooks(List<Book> books, String emptyMessage) {
+        if (books.isEmpty()) {
+            System.out.println(emptyMessage);
+            return;
+        }
+
+        books.forEach(System.out::println);
+}
 }

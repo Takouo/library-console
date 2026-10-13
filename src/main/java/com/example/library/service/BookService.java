@@ -1,6 +1,7 @@
 package com.example.library.service;
 
 import com.example.library.entity.Book;
+import com.example.library.entity.LibraryStats;
 import com.example.library.exception.BookAlreadyExistsException;
 import com.example.library.exception.BookNotFoundException;
 import com.example.library.exception.LibraryException;
@@ -39,6 +40,42 @@ public class BookService {
 
     public List<Book> findAll() {
         return new ArrayList<>(books.values());
+    }
+    public List<Book> searchByKeyword(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            throw new LibraryException("搜索关键词不能为空");
+        }
+
+        String lower = keyword.toLowerCase();
+
+        return books.values().stream()
+                .filter(book -> book.getTitle().toLowerCase().contains(lower)
+                        || book.getAuthor().toLowerCase().contains(lower))
+                .toList();
+    }
+
+    public List<Book> findByAuthor(String author) {
+        if (author == null || author.isBlank()) {
+            throw new LibraryException("作者名不能为空");
+        }
+
+        String lower = author.toLowerCase();
+
+        return books.values().stream()
+                .filter(book -> book.getAuthor().toLowerCase().contains(lower))
+                .toList();
+    }
+
+    public LibraryStats getStats() {
+        int total = books.size();
+
+        int borrowed = (int) books.values().stream()
+                .filter(Book::isBorrowed)
+                .count();
+
+        int available = total - borrowed;
+
+        return new LibraryStats(total, borrowed, available);
     }
 
     public Book findByIsbn(String isbn) {
